@@ -13,9 +13,12 @@ export default function Navbar() {
         <NavBarLink text="Finances" href="/" classNames="text-2xl" />
       </div>
       <div className="flex w-full items-center justify-between">
-        <div>
-          <NavBarLink text="Import" href="/import" classNames="text-sm" />
-        </div>
+        {sessionData && (
+          <div>
+            <NavBarLink text="Import" href="/import" classNames="text-sm" />
+          </div>
+        )}
+
         <div>
           <button
             className="rounded-sm bg-primary py-2 px-4"
