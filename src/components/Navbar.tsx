@@ -1,4 +1,5 @@
 import { signIn, signOut, useSession } from "next-auth/react";
+import { Button } from "./Button";
 
 import { NavBarLink } from "./NavbarLink";
 import { Text } from "./Text";
@@ -14,13 +15,18 @@ export default function Navbar() {
       </div>
       <div className="flex w-full items-center justify-between">
         {sessionData && (
-          <div>
+          <div className="flex">
             <NavBarLink text="Import" href="/import" classNames="text-sm" />
+            <NavBarLink
+              text="Categories"
+              href="/categories"
+              classNames="text-sm"
+            />
           </div>
         )}
 
         <div>
-          <button
+          {/* <button
             className="rounded-sm bg-primary py-2 px-4"
             onClick={sessionData ? () => signOut() : () => signIn()}
           >
@@ -28,7 +34,11 @@ export default function Navbar() {
               text={sessionData ? "Sign Out" : "Sign In"}
               classNames="text-sm"
             />
-          </button>
+          </button> */}
+          <Button
+            text={sessionData ? "Sign Out" : "Sign In"}
+            onClick={sessionData ? () => signOut() : () => signIn()}
+          />
         </div>
       </div>
     </div>

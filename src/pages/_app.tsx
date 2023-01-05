@@ -6,6 +6,7 @@ import { trpc } from "../utils/trpc";
 
 import "../styles/globals.css";
 import Navbar from "../components/Navbar";
+import { AppStateProvider } from "../providers/appState";
 
 const MyApp: AppType<{ session: Session | null }> = ({
   Component,
@@ -13,8 +14,10 @@ const MyApp: AppType<{ session: Session | null }> = ({
 }) => {
   return (
     <SessionProvider session={session}>
-      <Navbar />
-      <Component {...pageProps} />
+      <AppStateProvider>
+        <Navbar />
+        <Component {...pageProps} />
+      </AppStateProvider>
     </SessionProvider>
   );
 };

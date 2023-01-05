@@ -11,8 +11,10 @@ export const NavBarLink = ({
   text: string;
 }) => {
   return (
-    <Link href={href}>
-      <Text text={text} classNames={`${classNames}`} />
-    </Link>
+    <div className="mr-2">
+      <Link href={href}>
+        <Text text={text} classNames={`${classNames}`} />
+      </Link>
+    </div>
   );
 };
