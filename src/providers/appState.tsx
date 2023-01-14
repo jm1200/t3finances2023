@@ -1,22 +1,74 @@
 export {};
 
-import React, { createContext, useContext, useState } from "react";
+import React, { createContext, ReactNode, useContext, useState } from "react";
 import type { Dispatch, SetStateAction } from "react";
 
 interface AppState {
-  activeCategory: string;
-  setActiveCategory: Dispatch<SetStateAction<string>>;
+  selectedCategory: {
+    name: string;
+    id: string;
+  };
+  setSelectedCategory: Dispatch<
+    SetStateAction<{
+      name: string;
+      id: string;
+    }>
+  >;
+  editCategory: {
+    name: string;
+    id: string;
+  };
+  setEditCategory: Dispatch<
+    SetStateAction<{
+      name: string;
+      id: string;
+    }>
+  >;
+  addCategoryForm: boolean;
+  setAddCategoryForm: Dispatch<SetStateAction<boolean>>;
+  addSubcategoryForm: boolean;
+  setAddSubcategoryForm: Dispatch<SetStateAction<boolean>>;
+  resetAll: () => void;
+  closeCategories: () => void;
 }
+
 const AppStateContext = createContext({} as AppState);
 
 export const useAppState = () => useContext(AppStateContext);
 
-export const AppStateProvider = ({ children }: { children: any }) => {
-  const [activeCategory, setActiveCategory] = useState("");
+export const AppStateProvider = ({ children }: { children: ReactNode }) => {
+  const [selectedCategory, setSelectedCategory] = useState({
+    name: "",
+    id: "",
+  });
+  const [editCategory, setEditCategory] = useState({
+    name: "",
+    id: "",
+  });
+  const [addCategoryForm, setAddCategoryForm] = useState(false);
+  const [addSubcategoryForm, setAddSubcategoryForm] = useState(false);
+
+  const resetAll = () => {
+    setEditCategory({ name: "", id: "" });
+    setAddCategoryForm(false);
+    setAddSubcategoryForm(false);
+  };
+
+  const closeCategories = () => {
+    setSelectedCategory({ name: "", id: "" });
+  };
 
   const value = {
-    activeCategory,
-    setActiveCategory,
+    selectedCategory,
+    setSelectedCategory,
+    editCategory,
+    setEditCategory,
+    addCategoryForm,
+    setAddCategoryForm,
+    addSubcategoryForm,
+    setAddSubcategoryForm,
+    resetAll,
+    closeCategories,
   };
 
   return (

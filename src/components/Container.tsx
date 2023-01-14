@@ -6,7 +6,9 @@ export const Container = ({
   classNames?: string;
 }) => {
   return (
-    <div className={` h-full w-full pb-10 dark:bg-darkbgprimary ${classNames}`}>
+    <div
+      className={`  min-h-screen w-full pb-10 dark:bg-darkbgprimary ${classNames}`}
+    >
       {children}
     </div>
   );

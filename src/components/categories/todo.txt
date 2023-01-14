@@ -1,0 +1,2 @@
+left off fixing add category forms. try opening a category and adding sub category and then click on cancel,
+ or click on add category

@@ -1,16 +1,12 @@
-import { useState } from "react";
-import { SubmitHandler, useForm } from "react-hook-form";
-import { FiCheck, FiPlusCircle, FiX } from "react-icons/fi";
-import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Button } from "../Button";
-import { IconButton } from "../IconButton";
+import { useForm } from "react-hook-form";
+import type { SubmitHandler } from "react-hook-form";
+import { FiCheck, FiX } from "react-icons/fi";
+import { z } from "zod";
+import { useAppState } from "../../providers/appState";
 import { trpc } from "../../utils/trpc";
-
-interface IAddCategoryInputProps {
-  label: string;
-  parentCategory?: string | null;
-}
+import type { RouterInputs } from "../../utils/trpc";
+import { IconButton } from "../IconButton";
 
 const addCategoryValidationSchema = z.object({
   name: z
@@ -22,10 +18,18 @@ const addCategoryValidationSchema = z.object({
 type AddCategoryValidationSchema = z.infer<typeof addCategoryValidationSchema>;
 
 export function AddCategoryInput({
-  label,
-  parentCategory = null,
-}: IAddCategoryInputProps) {
-  const [addCategory, setAddCategory] = useState(false);
+  placeholder = "name...",
+}: {
+  placeholder?: string;
+}) {
+  const {
+    setAddCategoryForm,
+    setEditCategory,
+    selectedCategory,
+    setAddSubcategoryForm,
+    editCategory,
+    resetAll,
+  } = useAppState();
 
   const {
     register,
@@ -34,69 +38,76 @@ export function AddCategoryInput({
     formState: { errors },
   } = useForm<AddCategoryValidationSchema>({
     resolver: zodResolver(addCategoryValidationSchema),
+    defaultValues: { name: editCategory.name || "" },
   });
+
+  const utils = trpc.useContext();
 
   const { mutateAsync } = trpc.categories.create.useMutation({
     onSuccess: () => {
-      setAddCategory(false);
       reset();
+      utils.categories.getCategories.invalidate();
     },
   });
 
-  const onSubmit: SubmitHandler<AddCategoryValidationSchema> = (data) => {
+  const onSubmit: SubmitHandler<AddCategoryValidationSchema> = async (data) => {
     console.log(data);
 
-    mutateAsync({ name: data.name });
+    const newCat: RouterInputs["categories"]["create"] = {
+      name: data.name,
+      parentCategoryId: selectedCategory.id,
+      categoryId: editCategory.id,
+    };
+
+    console.log("addCategoryInput.tsx 57 newCat inputs:", newCat);
+
+    const x = await mutateAsync(newCat);
+
+    console.log("addCategoryInput.tsx 61 x:", x);
+
+    resetAll();
   };
 
+  const handleCancel = () => {
+    reset();
+    setAddCategoryForm(false);
+    setEditCategory({ name: "", id: "" });
+    setAddSubcategoryForm(false);
+  };
+  // console.log("addCategoryInput.tsx 30 addCategory:", addCategory);
   return (
-    <div>
-      {addCategory ? (
-        <div className="flex-col">
-          <div className="flex  items-center justify-between  py-2 pl-2">
-            <form onSubmit={handleSubmit(onSubmit)} className="mr-2 w-full">
-              <input
-                {...register("name")}
-                className="focus:shadow-outline  w-full flex-1 appearance-none rounded border px-3 py-2 text-sm leading-tight text-gray-700 focus:outline-none"
-                type="text"
-                id="name"
-                placeholder="  name..."
-              />
-              {errors.name && (
-                <p className="mt-2 text-xs italic text-red-500">
-                  {" "}
-                  {errors.name?.message}
-                </p>
-              )}
-            </form>
-            <div className="flex">
-              <IconButton
-                onClick={handleSubmit(onSubmit)}
-                Icon={FiCheck}
-                classNames="h-6 w-6 bg-success"
-              />
+    <div className="pb-4">
+      <div className="flex-col">
+        <div className="flex  items-center justify-between  py-2 pl-2">
+          <form onSubmit={handleSubmit(onSubmit)} className="mr-2 w-full">
+            <input
+              {...register("name")}
+              className="focus:shadow-outline  w-full flex-1 appearance-none rounded border px-3 py-2 text-sm leading-tight text-gray-700 focus:outline-none"
+              type="text"
+              id="name"
+              placeholder={placeholder}
+            />
+          </form>
+          <div className="flex pr-2">
+            <IconButton
+              onClick={handleSubmit(onSubmit)}
+              Icon={FiCheck}
+              classNames="h-6 w-6 bg-success"
+            />
 
-              <IconButton
-                Icon={FiX}
-                classNames="h-6 w-6 bg-caution"
-                onClick={() => {
-                  reset();
-                  setAddCategory(false);
-                }}
-              />
-            </div>
+            <IconButton
+              Icon={FiX}
+              classNames="h-6 w-6 bg-caution"
+              onClick={handleCancel}
+            />
           </div>
         </div>
-      ) : (
-        <div className="flex items-center justify-between ">
-          <h1 className="m-4 text-white">{label}</h1>
-          <IconButton
-            Icon={FiPlusCircle}
-            classNames="h-6 w-6 bg-primary"
-            onClick={() => setAddCategory(true)}
-          />
-        </div>
-      )}
+        {errors.name && (
+          <p className="mt-2 pl-4 text-xs italic text-red-500">
+            {errors.name?.message}
+          </p>
+        )}
+      </div>
     </div>
   );
 }

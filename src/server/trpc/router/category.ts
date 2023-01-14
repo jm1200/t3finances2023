@@ -21,20 +21,61 @@ export const categoryRouter = router({
         name: string({ required_error: "Category name is required" })
           .min(2, "Name too short.")
           .max(30, "Name too long."),
-        parentCategoryId: string().optional(),
+        parentCategoryId: string(),
+        categoryId: string(), //for editing current category
       })
     )
     .mutation(({ ctx, input }) => {
       const { prisma, session } = ctx;
       const userId = session.user.id;
-      const parentCategoryId = input.parentCategoryId || null;
+      const categoryId = input.categoryId;
+      const parentCategoryId = input.parentCategoryId;
 
-      return prisma.category.create({
-        data: {
-          name: input.name,
-          userId,
-          parentCategoryId,
-        },
+      console.log("category.ts 34 input categoryId:", categoryId);
+      if (parentCategoryId) {
+        return prisma.category.upsert({
+          where: { id: categoryId },
+          update: { name: input.name },
+          create: {
+            name: input.name,
+            user: {
+              connect: {
+                id: userId,
+              },
+            },
+            parentCategory: {
+              connect: {
+                id: parentCategoryId,
+              },
+            },
+          },
+        });
+      } else {
+        return prisma.category.upsert({
+          where: { id: categoryId },
+          update: { name: input.name },
+          create: {
+            name: input.name,
+            user: {
+              connect: {
+                id: userId,
+              },
+            },
+          },
+        });
+      }
+    }),
+  delete: protectedProcedure
+    .input(
+      z.object({
+        id: string(),
+      })
+    )
+    .mutation(({ input, ctx }) => {
+      const { prisma } = ctx;
+
+      return prisma.category.delete({
+        where: { id: input.id },
       });
     }),
 });

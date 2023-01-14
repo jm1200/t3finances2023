@@ -1,24 +1,55 @@
 import { FiEdit, FiTrash2 } from "react-icons/fi";
+import { useAppState } from "../../providers/appState";
 import type { RouterOutputs } from "../../utils/trpc";
+import { trpc } from "../../utils/trpc";
 import { IconButton } from "../IconButton";
+import { AddCategoryInput } from "./addCategoryInput";
 
 interface ISubCategoryProps {
-  subCategory: RouterOutputs["categories"]["getCategories"][number]["subCategories"][number];
+  subcategory: RouterOutputs["categories"]["getCategories"][number]["subCategories"][number];
 }
 
-export const SubCategory = ({ subCategory }: ISubCategoryProps) => {
-  const handleClick = () => {
-    console.log("subCategory.tsx 11 subCategory:", subCategory);
+export const SubCategory = ({ subcategory }: ISubCategoryProps) => {
+  const { setEditCategory, editCategory } = useAppState();
+
+  const utils = trpc.useContext();
+
+  const { mutateAsync } = trpc.categories.delete.useMutation({
+    onSuccess: () => {
+      utils.categories.getCategories.invalidate();
+    },
+  });
+
+  const handleDeleteCategory = () => {
+    console.log("subCategory.tsx 23 subCategory:", subcategory);
+    mutateAsync({ id: subcategory.id });
   };
+
+  const handleEditCategory = () => {
+    setEditCategory({ name: subcategory.name, id: subcategory.id });
+  };
+
   return (
-    <div className="flex items-center justify-between bg-green-300 p-2">
-      <p>{subCategory.name}</p>
-      <div className="flex">
-        <IconButton Icon={FiEdit} classNames="h-6 w-6 bg-caution" />
-        <IconButton Icon={FiTrash2} classNames="h-6 w-6 bg-warning" />
-        {/* <FiEdit className="h-5 w-5" />
-        <FiTrash2 className="ml-1 h-5 w-5" /> */}
-      </div>
-    </div>
+    <>
+      {subcategory.id === editCategory.id ? (
+        <AddCategoryInput />
+      ) : (
+        <div className="flex items-center justify-between p-2 text-white">
+          <p>{subcategory.name}</p>
+          <div className="flex">
+            <IconButton
+              Icon={FiEdit}
+              classNames="h-6 w-6 bg-caution"
+              onClick={handleEditCategory}
+            />
+            <IconButton
+              Icon={FiTrash2}
+              classNames="h-6 w-6 bg-warning"
+              onClick={handleDeleteCategory}
+            />
+          </div>
+        </div>
+      )}
+    </>
   );
 };

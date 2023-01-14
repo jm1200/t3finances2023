@@ -24,10 +24,10 @@ model Category {
   id               String     @id @default(cuid())
   name             String
   parentCategoryId String?
-  parentCategory   Category?  @relation("categorySubCategory", fields: [parentCategoryId], references: [id])
+  parentCategory   Category?  @relation("categorySubCategory", fields: [parentCategoryId], references: [id], onDelete: Cascade)
   subCategories    Category[] @relation("categorySubCategory")
   userId           String
-  user             User       @relation(fields: [userId], references: [id])
+  user             User       @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 // Necessary for Next auth
